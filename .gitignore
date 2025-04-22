@@ -1,0 +1,60 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+.yarn/
+
+# Power BI Visual build artifacts
+*.pbiviz
+/temp/
+.tmp/
+/.tmp/
+obj/
+dist/
+lib/
+build/
+
+# VS Code
+.vscode/
+.history/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Power BI tools
+.pbi-tools/
+*.pbix
+*.pbit
+
+# IDEs & Editors
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Coverage
+coverage/
+
+# Tests
+test-results/
+junit.xml
+
+# Cache
+.cache/
+.next/
+out/
