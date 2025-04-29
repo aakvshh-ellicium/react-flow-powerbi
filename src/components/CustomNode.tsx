@@ -73,6 +73,7 @@ const StyledNode = styled.div<{
   color: #222;
   width: 150px;
   border: 1px solid ${(props) => (props.isDoubleClicked ? "#ff0072" : "#222")};
+  font-size: 14px;
 
   .react-flow__handle {
     background: #183b4e;

@@ -24,10 +24,45 @@ export class Visual implements IVisual {
     this.target = options.element;
     this.root = ReactDOMClient.createRoot(this.target);
     this.host = options.host;
+
+    // Render default nodes immediately
+    const defaultNodes: NodeState[] = [
+      {
+        id: "node1",
+        label: "Node 1",
+        position: { x: 0, y: 0 },
+        percentChange: 100,
+      },
+      {
+        id: "node2",
+        label: "Node 2",
+        position: { x: 0, y: 150 },
+        percentChange: 100,
+      },
+    ];
+
+    const defaultEdges: Edge[] = [
+      {
+        id: "node1-node2",
+        source: "node1",
+        target: "node2",
+        type: "default",
+      },
+    ];
+
+    this.root.render(
+      <ReactFlowComponent
+        nodesFromVisual={defaultNodes}
+        edgesFromVisual={defaultEdges}
+        onChartChange={this.debouncedChartChange}
+        onEdgesUpdate={this.debouncedEdgesUpdate}
+      />
+    );
   }
 
   public update(options: VisualUpdateOptions): void {
     const dataView: DataView = options.dataViews?.[0];
+    console.log("options", options);
     if (!dataView?.table?.rows?.length) return;
 
     const settings = dataView.metadata.objects?.layout;
@@ -63,23 +98,38 @@ export class Visual implements IVisual {
 
     function calculatePercentChange(
       parentValues: any[],
-      childValues: any[]
+      childValues: any[],
+      parentIsMeasure: boolean,
+      childIsMeasure: boolean
     ): number {
-      const uniqueParentCount = new Set(parentValues).size;
-      const uniqueChildCount = new Set(childValues).size;
+      const uniqueParentCount = parentIsMeasure
+        ? 1
+        : new Set(parentValues).size;
+      const uniqueChildCount = childIsMeasure ? 1 : new Set(childValues).size;
 
       if (uniqueParentCount === 0) return 0;
-
-      console.log("uniqueParentCount", uniqueParentCount);
-      console.log("uniqueChildCount", uniqueChildCount);
 
       return +((uniqueChildCount / uniqueParentCount) * 100).toFixed(2);
     }
 
     const nodes: NodeState[] = columns.map((col, colIndex) => {
       const id = col.queryName;
-      const currentValues = rows.map((row) => row[colIndex]);
       const saved = savedNodes.find((n) => n.id === id);
+      const isMeasure = col.isMeasure;
+      const currentValues = rows.map((row) => row[colIndex]);
+
+      let uniqueCurrent = 0;
+      let measureValue = 0;
+
+      if (!isMeasure) {
+        uniqueCurrent = new Set(currentValues).size;
+      } else {
+        // If measure, just pick first value (they are repeated in all rows)
+        const measureValues = rows.map((row) => row[colIndex]);
+        console.log("measureValues", measureValues)
+        measureValue = Number(measureValues.reduce((sum, val) => Number(sum) + (Number(val) || 0), 0));
+        uniqueCurrent = 1;
+      }
 
       let incomingEdge: Edge | undefined = undefined;
 
@@ -87,47 +137,62 @@ export class Visual implements IVisual {
         incomingEdge = savedEdges.find((edge) => edge.target === id);
       }
 
-      // Ensure new node is handled correctly
       if (!incomingEdge && colIndex > 0) {
-        const fallbackEdge: Edge = {
+        incomingEdge = {
           id: `${columns[colIndex - 1].queryName}-${id}`,
           source: columns[colIndex - 1].queryName,
           target: id,
           type: "default",
         };
-        incomingEdge = fallbackEdge;
       }
 
-      let percentChange = 100; // Default percentChange value
+      let percentChange = 100;
 
-      // Ensure recalculation if node is newly added or updated
       if (incomingEdge) {
-        console.log("inside 1");
-        console.log("columns: ", columns);
-        console.log("incomingEdge: ", incomingEdge);
         const parentColumnIndex = columns.findIndex(
           (c) => c.queryName === incomingEdge.source
         );
+        const parentIsMeasure = columns[parentColumnIndex]?.isMeasure ?? false;
 
         if (parentColumnIndex >= 0) {
-          console.log("inside 2");
-
           const parentValues = rows.map((row) => row[parentColumnIndex]);
-          percentChange = calculatePercentChange(parentValues, currentValues);
-          console.log("percent: ", percentChange);
+          let parentUnique = 0;
+          let parentMeasureValue = 0;
+
+          if (!parentIsMeasure) {
+            parentUnique = new Set(parentValues).size;
+          } else {
+            parentMeasureValue = Number(parentValues[0]) ?? 0;
+            parentUnique = 1;
+          }
+
+          if (isMeasure && parentIsMeasure) {
+            // BOTH are measures -> simple percentage ratio
+            if (parentMeasureValue !== 0) {
+              percentChange = +(
+                (measureValue / parentMeasureValue) *
+                100
+              ).toFixed(2);
+            }
+          } else if (!isMeasure && !parentIsMeasure) {
+            // BOTH are groupings -> unique counts
+            if (parentUnique !== 0) {
+              percentChange = +((uniqueCurrent / parentUnique) * 100).toFixed(
+                2
+              );
+            }
+          } else {
+            // Mixed case (one is measure, one is grouping)
+            percentChange = 100;
+          }
         }
-      } else if (colIndex > 0) {
-        console.log("inside 3");
-
-        const parentValues = rows.map((row) => row[colIndex - 1]);
-        percentChange = calculatePercentChange(parentValues, currentValues);
       }
-
-      const uniqueCurrent = new Set(currentValues).size;
 
       return {
         id,
-        label: `${col.displayName} (${uniqueCurrent})`,
+        label: `${col.displayName} (${
+          isMeasure ? measureValue : uniqueCurrent
+        })`,
         position: saved?.position ?? { x: 0, y: colIndex * 150 },
         percentChange,
       };

@@ -221,59 +221,6 @@ const ReactFlowComponent: React.FC<Props> = ({
 
   const handleNodeDoubleClick = (event: any, node: Node) => {
     setSelectedNode(node);
-
-    // const childEdges = edges.filter((e) => e.source === node.id);
-    // const childCount = childEdges.length;
-
-    // const siblingOffset = 150;
-
-    // const newX =
-    //   node.position.x +
-    //   (childCount % 2 === 0 ? 1 : -1) *
-    //     Math.ceil((childCount + 1) / 2) *
-    //     siblingOffset;
-
-    // const newY = node.position.y + 150;
-
-    // const newNodeId = `new-${Date.now()}`;
-
-    // const newNode: Node = {
-    //   id: newNodeId,
-    //   data: { label: `Node ${childCount + 1}` },
-    //   position: { x: newX, y: newY },
-    //   type: "custom",
-    // };
-
-    // const newEdge: Edge = {
-    //   id: `e${node.id}-${newNodeId}`,
-    //   source: node.id,
-    //   target: newNodeId,
-    //   label: "New Connection",
-    //   type: "step",
-    //   style: { stroke: "#183B4E", strokeWidth: 2.5 },
-    //   markerEnd: {
-    //     type: MarkerType.Arrow,
-    //     color: "#183B4E",
-    //     strokeWidth: 1.5,
-    //   },
-    // };
-
-    // setNodes((prevNodes) => {
-    //   const updated = [...prevNodes, newNode];
-    //   // console.log("Adding new node:", newNode);
-    //   console.log("updated nodes: ", updated);
-    //   onChartChange?.(prevNodes);
-    //   return prevNodes;
-    // });
-
-    // setEdges((prevEdges) => {
-    //   const updated = [...prevEdges, newEdge];
-    //   // console.log("Adding new edge:", newEdge);
-    //   console.log("updated 3", updated);
-
-    //   onEdgesUpdate?.(updated);
-    //   return updated;
-    // });
   };
 
   return (
