@@ -15,8 +15,8 @@ import "./../style/visual.less";
 import { Edge } from "@xyflow/react";
 
 export class Visual implements IVisual {
-  private target: HTMLElement;
-  private root: ReactDOMClient.Root;
+  private readonly target: HTMLElement;
+  private readonly root: ReactDOMClient.Root;
   private isDataReady: boolean = false; // flag to check if data is available
   host: any;
 
@@ -162,7 +162,7 @@ export class Visual implements IVisual {
           if (!parentIsMeasure) {
             parentUnique = new Set(parentValues).size;
           } else {
-            parentMeasureValue = Number(parentValues[0]) ?? 0;
+            parentMeasureValue = Number(parentValues[0]) || 0;
             parentUnique = 1;
           }
 
@@ -183,7 +183,7 @@ export class Visual implements IVisual {
             }
           } else {
             // Mixed case (one is measure, one is grouping)
-            percentChange = 100;
+            // percentChange = 100;
           }
         }
       }
@@ -231,7 +231,7 @@ export class Visual implements IVisual {
   }
 
   // Create debounced versions of onChartChange and onEdgesUpdate
-  private debouncedChartChange = debounce((updatedNodes: NodeState[]) => {
+  private readonly debouncedChartChange = debounce((updatedNodes: NodeState[]) => {
     this.host.persistProperties({
       merge: [
         {
@@ -245,7 +245,7 @@ export class Visual implements IVisual {
     });
   }, 500); // 500ms debounce time, adjust as needed
 
-  private debouncedEdgesUpdate = debounce((updatedEdges: Edge[]) => {
+  private readonly debouncedEdgesUpdate = debounce((updatedEdges: Edge[]) => {
     this.host.persistProperties({
       merge: [
         {

@@ -4,7 +4,7 @@
         "displayName": "POCPowerBIChart",
         "guid": "pOCPowerBIChart",
         "visualClassName": "Visual",
-        "version": "3.0.0.0",
+        "version": "4.0.0.0",
         "description": "react-chart",
         "supportUrl": "/",
         "gitHubUrl": ""
